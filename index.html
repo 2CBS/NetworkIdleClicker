@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Network Injector: Idle Clicker Game</title>
+		<link href="https://fonts.googleapis.com/css2?family=Genos:wght@400&display=swap" rel="stylesheet" />
+		<link
+			href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAARAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAABEAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAEQAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP3/AAD9/wAA/P8AAP7/AAD+/wAA/n8AAP9/AAD/fwAA/z8AAP+/AAD/vwAA//8AAP//AAD//wAA"
+			rel="icon"
+			type="image/x-icon" />
+		<link rel="stylesheet" href="https://often.github.io/term/css/term.min.css" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<style>
+			:root {
+				--font: "Genos", cursive;
+				--theme-color: #7100ff;
+				--bg-color: #020202;
+				--text-color: #ffffff;
+			}
+
+			header {
+				filter: drop-shadow(0 0 8px var(--theme-color));
+				text-align: center;
+			}
+
+			header h1 {
+				text-transform: uppercase;
+			}
+
+			#featureButtons {
+				margin-top: 20px;
+				display: grid;
+				grid-template-columns: repeat(2, 1fr);
+				gap: 10px;
+				justify-content: center;
+				width: auto;
+			}
+
+			.centered {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+			}
+
+			#clickButton {
+				width: 35%;
+				font-size: 20px;
+			}
+
+			.info-tooltip {
+				position: relative;
+				display: inline-block;
+				cursor: help;
+			}
+
+			.info-tooltip::after {
+				content: "?";
+				position: absolute;
+				top: 50%;
+				left: 100%;
+				transform: translate(-50%, -50%);
+				background-color: #ddd;
+				color: #333;
+				padding: 4px;
+				border-radius: 50%;
+				font-size: 14px;
+				display: none;
+			}
+
+			.info-tooltip:hover::after {
+				display: inline-block;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<h1>Network Idle Clicker</h1>
+		</header>
+		<nav>
+			<a>Total Injections: <span id="score">0</span></a>
+			<ul>
+				<li>
+					<a id="networkLevelInfo">Network Level: <span id="networkLevelDisplay">1</span></a>
+				</li>
+			</ul>
+		</nav>
+		<section>
+			<div class="centered">
+				<p>Clicks Per Second: <span id="cps">0</span></p>
+				<button id="clickButton">Inject!</button>
+			</div>
+		</section>
+		<p class="centered">Click the button to earn injections and upgrade your network!</p>
+		<section>
+			<div id="featureButtons">
+				<button
+					class="featureButton info-tooltip"
+					id="autoClickerButton"
+					disabled
+					title="Auto Injector: Increase clicks per second through automation. Cost: 50">
+					Auto Injector (Cost: 50)
+				</button>
+				<button
+					class="featureButton info-tooltip"
+					id="bonusCPSButton"
+					disabled
+					title="Clicks Injections: Inject extra clicks per second. Cost: 100">
+					Clicks Injection (Cost: 100)
+				</button>
+				<button
+					class="featureButton info-tooltip"
+					id="doubleScoreButton"
+					disabled
+					title="Double Injections: Multiply your current injections x2. Cost: 150">
+					Double Injections (Cost: 150)
+				</button>
+				<button
+					class="featureButton info-tooltip"
+					id="superClickButton"
+					disabled
+					title="Code Injector: Increase click power through code injection. Cost: 200">
+					Code Injector (Cost: 200)
+				</button>
+				<button
+					class="featureButton info-tooltip"
+					id="megaNetworkButton"
+					disabled
+					title="Network Injector: Inject code to boost network level. Cost: 250">
+					Network Injector (Cost: 250)
+				</button>
+				<button
+					class="featureButton info-tooltip"
+					id="timeWarpButton"
+					disabled
+					title="Time Warp: Temporarily speed up clicks per second. Cost: 300">
+					Time Warper (Cost: 300)
+				</button>
+				<button
+					class="featureButton info-tooltip"
+					id="clickMultiplierButton"
+					disabled
+					title="Multiplier Injector: Multiply your injections for a duration. Cost: 350">
+					Multiplier Injector (Cost: 350)
+				</button>
+				<button
+					class="featureButton info-tooltip"
+					id="ultimateUpgradeButton"
+					disabled
+					title="Ultimate Injector: Inject code to boost network level and clicks per second. Cost: 400">
+					Ultimate Injector (Cost: 400)
+				</button>
+				<button
+					class="featureButton info-tooltip"
+					id="hyperClickerButton"
+					disabled
+					title="Hyper Injector: Increase click power and clicks per second through intense injection. Cost: 450">
+					Hyper Injector (Cost: 450)
+				</button>
+				<button
+					class="featureButton"
+					id="networkBoostButton"
+					disabled
+					title="Network Boost: Boost network level through advanced injection. Cost: 500">
+					Advanced Injector (Cost: 500) <span class="info"></span>
+				</button>
+			</div>
+		</section>
+
+		<script>
+			let score = 0;
+			let clicksPerSecond = 0;
+			let networkLevel = 1;
+			let upgradeCost = 20;
+			let upgradeCostMultiplier = 1.5;
+
+			const items = [
+				{ id: "autoClickerButton", cost: 50, cpsIncrease: 5, name: "Auto Injector" },
+				{ id: "bonusCPSButton", cost: 100, cpsIncrease: 10, name: "Clicks Injection" },
+				{ id: "doubleScoreButton", cost: 150, scoreMultiplier: 2, name: "Double Injections" },
+				{ id: "superClickButton", cost: 200, clickIncrease: 2, name: "Code Injector" },
+				{ id: "megaNetworkButton", cost: 250, networkLevelIncrease: 5, name: "Network Injector" },
+				{ id: "timeWarpButton", cost: 300, timeWarp: true, timeWarpMultiplier: 2, timeWarpDuration: 10, name: "Time Warper" },
+				{ id: "clickMultiplierButton", cost: 350, clickMultiplier: 2, clickMultiplierDuration: 10, name: "Multiplier Injector" },
+				{ id: "ultimateUpgradeButton", cost: 400, networkLevelIncrease: 10, cpsIncrease: 20, name: "Ultimate Injector" },
+				{ id: "hyperClickerButton", cost: 450, clickIncrease: 5, cpsIncrease: 15, name: "Hyper Injector" },
+				{ id: "networkBoostButton", cost: 500, networkLevelIncrease: 20, name: "Advanced Injector" },
+			];
+
+			const scoreDisplay = document.getElementById("score");
+			const cpsDisplay = document.getElementById("cps");
+			const clickButton = document.getElementById("clickButton");
+			const devClickButton = document.getElementById("devClickButton");
+			const featureButtons = document.querySelectorAll(".featureButton");
+			const networkLevelInfo = document.getElementById("networkLevelInfo");
+			const networkLevelDisplay = document.getElementById("networkLevelDisplay");
+
+			const maxClicksPerMinute = 150;
+			let clicksThisMinute = 0;
+
+			clickButton.addEventListener("click", () => {
+				clicksThisMinute++;
+
+				if (clicksThisMinute > maxClicksPerMinute) {
+					score = 0;
+					clicksThisMinute = 0;
+				}
+
+				score++;
+
+				scoreDisplay.textContent = score;
+				cpsDisplay.textContent = clicksPerSecond;
+			});
+
+			featureButtons.forEach((button) => {
+				button.addEventListener("click", () => {
+					const itemId = button.id;
+					const item = items.find((item) => item.id === itemId);
+
+					if (score >= item.cost) {
+						score -= item.cost;
+						item.cost *= 2;
+						scoreDisplay.textContent = score;
+						button.textContent = `${button.textContent.split(" ")[0]} (Cost: ${item.cost})`;
+
+						if (score < item.cost) {
+							button.disabled = true;
+						} else {
+							button.disabled = false;
+						}
+
+						if (item.cpsIncrease) {
+							clicksPerSecond += item.cpsIncrease;
+						}
+
+						if (item.scoreMultiplier) {
+							score *= item.scoreMultiplier;
+							scoreDisplay.textContent = score;
+						}
+
+						if (item.clickIncrease) {
+							score += item.clickIncrease;
+						}
+
+						if (item.networkLevelIncrease) {
+							networkLevel += item.networkLevelIncrease;
+							updateNetworkLevel();
+						}
+
+						if (item.timeWarp) {
+							setTimeout(() => {
+								clicksPerSecond /= item.timeWarpMultiplier;
+								updateCPSDisplay();
+							}, item.timeWarpDuration * 1000);
+						}
+
+						if (item.clickMultiplier) {
+							score *= item.clickMultiplier;
+
+							setTimeout(() => {
+								score /= item.clickMultiplier;
+								scoreDisplay.textContent = score;
+							}, item.clickMultiplierDuration * 1000);
+						}
+
+						updateCPSDisplay();
+						enableButtons();
+					}
+				});
+			});
+
+			setInterval(() => {
+				score += clicksPerSecond;
+				scoreDisplay.textContent = score;
+				enableButtons();
+			}, 1000);
+
+			function updateCPSDisplay() {
+				cpsDisplay.textContent = clicksPerSecond;
+			}
+
+			function updateNetworkLevel() {
+				// Increase network level
+				networkLevel++;
+				networkLevelDisplay.textContent = networkLevel;
+
+				// Adjust the costs and names of all items based on the 20% increase
+				items.forEach((item) => {
+					item.cost = Math.ceil(item.cost * upgradeCostMultiplier);
+					const button = document.getElementById(item.id);
+					const itemName = item.name.replace(/([A-Z])/g, " $1").trim(); // Convert camelCase to spaced words
+					button.textContent = `${itemName} (Cost: ${item.cost})`;
+				});
+
+				// Update the network level display
+				networkLevelDisplay.textContent = networkLevel;
+
+				// Check if buttons should be enabled after the network level increase
+				enableButtons();
+			}
+
+			function enableButtons() {
+				featureButtons.forEach((button) => {
+					const itemId = button.id;
+					const item = items.find((item) => item.id === itemId);
+
+					if (score >= item.cost) {
+						button.disabled = false;
+					} else {
+						button.disabled = true;
+					}
+				});
+			}
+		</script>
+	</body>
+</html>
