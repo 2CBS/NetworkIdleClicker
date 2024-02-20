@@ -199,19 +199,29 @@
 			const networkLevelInfo = document.getElementById("networkLevelInfo");
 			const networkLevelDisplay = document.getElementById("networkLevelDisplay");
 
-			const maxClicksPerMinute = 150;
-			let clicksThisMinute = 0;
+			const maxClicksPerInterval = 80;
+			const intervalDuration = 10 * 1000;
+			let clicksThisInterval = 0;
+
+			setInterval(() => {
+				score += clicksPerSecond;
+				scoreDisplay.textContent = score;
+				enableButtons();
+			}, 1000);
+
+			setInterval(() => {
+				clicksThisInterval = 0;
+			}, intervalDuration);
 
 			clickButton.addEventListener("click", () => {
-				clicksThisMinute++;
+				clicksThisInterval++;
 
-				if (clicksThisMinute > maxClicksPerMinute) {
+				if (clicksThisInterval > maxClicksPerInterval) {
 					score = 0;
-					clicksThisMinute = 0;
+					clicksThisInterval = 0;
 				}
 
 				score++;
-
 				scoreDisplay.textContent = score;
 				cpsDisplay.textContent = clicksPerSecond;
 			});
@@ -284,22 +294,18 @@
 			}
 
 			function updateNetworkLevel() {
-				// Increase network level
 				networkLevel++;
 				networkLevelDisplay.textContent = networkLevel;
 
-				// Adjust the costs and names of all items based on the 20% increase
 				items.forEach((item) => {
 					item.cost = Math.ceil(item.cost * upgradeCostMultiplier);
 					const button = document.getElementById(item.id);
-					const itemName = item.name.replace(/([A-Z])/g, " $1").trim(); // Convert camelCase to spaced words
+					const itemName = item.name.replace(/([A-Z])/g, " $1").trim();
 					button.textContent = `${itemName} (Cost: ${item.cost})`;
 				});
 
-				// Update the network level display
 				networkLevelDisplay.textContent = networkLevel;
 
-				// Check if buttons should be enabled after the network level increase
 				enableButtons();
 			}
 
